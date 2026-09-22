@@ -21,18 +21,35 @@ jobs:
 
       # AGP 8.1.4 需要 JDK 17；runner 上预装的是 17/21，显式选 17
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      # 刻意不使用 android-actions/setup-android。
+      # GitHub 的 ubuntu runner 镜像本身就装了 Android SDK 并配好了
+      # ANDROID_HOME / ANDROID_SDK_ROOT —— 再套一层第三方 action 只是多一个
+      # 可能失效的环节（它的运行时被上游停用时，会在任何构建步骤之前就失败）。
+      # 这里把 SDK 位置显式写进 local.properties，让 AGP 没有猜的余地；
+      # local.properties 在 .gitignore 里，CI 里生成正是它的正常用法。
+      - name: Locate Android SDK
+        run: |
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          test -d "$SDK" || { echo "找不到 Android SDK: $SDK"; exit 1; }
+          echo "sdk.dir=$SDK" > local.properties
+          echo "SDK = $SDK"
+          echo "--- platforms ---"; ls "$SDK/platforms" 2>/dev/null || true
+          echo "--- build-tools ---"; ls "$SDK/build-tools" 2>/dev/null || true
 
       # 工程锁定了 build-tools 34.0.0，而 gradle.properties 里关掉了 sdkDownload，
-      # 所以必须在构建前把它装好，否则构建会直接失败而不是自动下载。
+      # 所以必须在构建前装好，否则构建会直接失败而不是自动下载。
+      # `yes |` 让 sdkmanager 自己吞掉许可确认，避免它等待输入挂到超时。
       - name: Install required SDK packages
-        run: sdkmanager --install "platforms;android-34" "build-tools;34.0.0"
+        run: |
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          SDKMGR="$(command -v sdkmanager || echo "$SDK/cmdline-tools/latest/bin/sdkmanager")"
+          "$SDKMGR" --version
+          yes | "$SDKMGR" --install "platforms;android-34" "build-tools;34.0.0"
 
       - name: Cache Gradle
         uses: actions/cache@v4
@@ -43,7 +60,7 @@ jobs:
           key: gradle-${{ runner.os }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', '**/*.gradle') }}
           restore-keys: gradle-${{ runner.os }}-
 
-      # gradlew 的可执行位在 git 索引里是 100755。但 Windows 上 core.filemode=false，
+      # gradlew 的可执行位在 git 索引里是 100755，但 Windows 上 core.filemode=false，
       # 从 Windows 提交后这个位容易丢，Linux 上就会 ./gradlew: Permission denied。
       # 这里兜一道，代价是一行，收益是「不再因为换平台提交而红」。
       - name: Ensure gradlew is executable
