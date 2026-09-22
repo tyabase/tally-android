@@ -6,8 +6,9 @@
 
 **Tally**（轻记账）是一个 Android 本地记账应用。界面全部由 Web 层绘制，原生只补齐 WebView 做不到的那几件事。
 
+[![Build](https://github.com/tyabase/tally-android/actions/workflows/build.yml/badge.svg)](https://github.com/tyabase/tally-android/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/license-MIT-0A0A0B?style=flat-square)](LICENSE)
-[![Release](https://img.shields.io/badge/release-v1.4-0A0A0B?style=flat-square)](../../releases)
+[![Release](https://img.shields.io/badge/release-v1.4-0A0A0B?style=flat-square)](https://github.com/tyabase/tally-android/releases)
 [![minSdk](https://img.shields.io/badge/minSdk-26-0A0A0B?style=flat-square)](#构建)
 [![APK](https://img.shields.io/badge/APK-2.25%20MB-0A0A0B?style=flat-square)](#构建)
 [![Permissions](https://img.shields.io/badge/permissions-none-1E8E5A?style=flat-square)](#隐私)
@@ -266,8 +267,8 @@ int kb = ime > nav ? ime : 0;
 不需要 Android Studio —— 这正是这个项目最初的技术目标之一。
 
 ```bash
-git clone <repo-url>
-cd tally
+git clone https://github.com/tyabase/tally-android.git
+cd tally-android
 
 # 1) 生成一个属于你自己的签名密钥
 mkdir -p keystore
@@ -384,7 +385,7 @@ APK      app/build/outputs/apk/release/app-release.apk  (2.25 MB)
 
 ## License
 
-[MIT](LICENSE) © 2026 tydblog
+[MIT](LICENSE) © 2026 tyabase
 
 <div align="center">
 <sub>五笔划记法 · 一笔一笔记下来</sub>

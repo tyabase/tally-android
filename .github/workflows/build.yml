@@ -43,6 +43,12 @@ jobs:
           key: gradle-${{ runner.os }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', '**/*.gradle') }}
           restore-keys: gradle-${{ runner.os }}-
 
+      # gradlew 的可执行位在 git 索引里是 100755。但 Windows 上 core.filemode=false，
+      # 从 Windows 提交后这个位容易丢，Linux 上就会 ./gradlew: Permission denied。
+      # 这里兜一道，代价是一行，收益是「不再因为换平台提交而红」。
+      - name: Ensure gradlew is executable
+        run: chmod +x ./gradlew
+
       - name: Build release
         run: ./gradlew assembleRelease --no-daemon --stacktrace
 
