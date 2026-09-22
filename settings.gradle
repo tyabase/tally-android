@@ -1,0 +1,28 @@
+/*
+ * 仓库顺序是「国内镜像优先，官方源兜底」。
+ * 阿里云镜像在上面能显著加快国内首次构建；遇到镜像没同步到的构件时，
+ * Gradle 会自动回落到下面的 google() / mavenCentral()，不需要手动切换。
+ * 如果你的网络访问官方源更快，把三个 maven { ... } 块删掉即可，其余不用改。
+ */
+pluginManagement {
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "Tally"
+include ':app'

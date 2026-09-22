@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  图标底色：墨黑。
+  渐变只从 #1B1B1E 走到 #060607 —— 幅度小到近乎纯色，
+  目的只是让平面有一点点「厚度」，而不是刷出可见的渐变条。
+  蓝色渐变属于十年前的科技感，黑白的高级感来自「几乎没在动」。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:pathData="M0,0h108v108h-108z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="0"
+                android:startY="0"
+                android:endX="108"
+                android:endY="108">
+                <item android:offset="0" android:color="#FF1B1B1E" />
+                <item android:offset="1" android:color="#FF060607" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>

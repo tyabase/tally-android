@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#F2F2F4">
+<title>Tally · 轻记账</title>
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- 壳层：四个标签页 + 底部导航。模态是它的兄弟节点，
+       层级由 DOM 顺序天然决定，不需要靠 z-index 抢。 -->
+  <div id="shell">
+    <div id="viewport">
+
+      <!-- ============ 01 · 首页 概览 ============ -->
+      <section class="screen" id="s-home">
+        <div class="content">
+          <header class="home-head">
+            <div class="home-greet">
+              <h1 class="home-greet__title" id="greetTitle"></h1>
+              <p class="home-greet__sub" id="greetSub"></p>
+            </div>
+            <div class="home-head__actions">
+              <button class="icon-btn" id="btnSettings" aria-label="设置">
+                <span class="ico" data-ico="sliders"></span>
+              </button>
+              <button class="avatar" id="btnProfile" aria-label="昵称"></button>
+            </div>
+          </header>
+
+          <section class="hero" id="homeHero">
+            <div class="hero__top">
+              <span class="hero__label">本月结余</span>
+              <span class="hero__chip"><span id="heroMonth"></span></span>
+            </div>
+            <div class="hero__amount"><span class="cur">¥</span><span id="heroBalance">0.00</span></div>
+            <div class="hero__stats">
+              <div class="hero__stat">
+                <div class="hero__stat-label"><i class="dot dot--income-soft"></i>收入</div>
+                <div class="hero__stat-value" id="heroIncome">0.00</div>
+              </div>
+              <div class="hero__stat">
+                <div class="hero__stat-label"><i class="dot dot--expense-soft"></i>支出</div>
+                <div class="hero__stat-value" id="heroExpense">0.00</div>
+              </div>
+            </div>
+          </section>
+
+          <div class="home-body" id="homeBody"></div>
+        </div>
+      </section>
+
+      <!-- ============ 03 · 账单明细 ============ -->
+      <section class="screen" id="s-detail">
+        <div class="content">
+          <header class="page-head">
+            <h1 class="page-head__title">明细</h1>
+            <div class="page-head__actions">
+              <button class="icon-btn" id="btnSearch" aria-label="搜索">
+                <span class="ico" data-ico="search"></span>
+              </button>
+              <button class="icon-btn" id="btnFilter" aria-label="筛选">
+                <span class="ico" data-ico="filter"></span>
+              </button>
+              <button class="icon-btn icon-btn--brand" data-nav="add" aria-label="记一笔">
+                <span class="ico" data-ico="plus"></span>
+              </button>
+            </div>
+          </header>
+
+          <!-- 搜索栏就地展开，不再跳一个弹层去输入 -->
+          <div class="search-bar" id="searchBar">
+            <div class="search-bar__field">
+              <span class="ico" data-ico="search" data-size="18"></span>
+              <input id="searchInput" class="search-bar__input" type="text"
+                     placeholder="搜索备注、分类或账户" enterkeyhint="search" autocomplete="off">
+              <button class="search-bar__clear" id="searchClear" aria-label="清除">
+                <span class="ico" data-ico="close" data-size="13"></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="month-row">
+            <div class="month-nav">
+              <button class="month-nav__btn month-nav__btn--prev" id="btnMonthPrev" aria-label="上个月">
+                <span class="ico" data-ico="chevronRight" data-size="15"></span>
+              </button>
+              <button class="month-picker" id="btnMonth">
+                <span id="detailMonth"></span>
+                <span class="ico ico--sm" data-ico="chevronDown" data-size="14"></span>
+              </button>
+              <button class="month-nav__btn" id="btnMonthNext" aria-label="下个月">
+                <span class="ico" data-ico="chevronRight" data-size="15"></span>
+              </button>
+            </div>
+            <span class="month-row__count" id="detailCount"></span>
+          </div>
+
+          <section class="summary-card">
+            <div class="summary-card__col">
+              <span class="summary-card__label">支出</span>
+              <span class="summary-card__value" id="sumExpense">0.00</span>
+            </div>
+            <div class="summary-card__col">
+              <span class="summary-card__label">收入</span>
+              <span class="summary-card__value c-income" id="sumIncome">0.00</span>
+            </div>
+            <div class="summary-card__col">
+              <span class="summary-card__label">结余</span>
+              <span class="summary-card__value" id="sumBalance">0.00</span>
+            </div>
+          </section>
+
+          <div class="chips" id="detailChips"></div>
+          <div id="detailGroups"></div>
+        </div>
+      </section>
+
+      <!-- ============ 04 · 统计 ============ -->
+      <section class="screen" id="s-stats">
+        <div class="content">
+          <header class="page-head">
+            <h1 class="page-head__title">统计</h1>
+            <span class="month-chip"><span id="statsMonth"></span></span>
+          </header>
+
+          <div class="segment segment--3" id="rangeSegment">
+            <span class="segment__thumb" id="rangeThumb"></span>
+            <button class="segment__item" data-range="week"><span>周</span></button>
+            <button class="segment__item is-active" data-range="month"><span>月</span></button>
+            <button class="segment__item" data-range="year"><span>年</span></button>
+          </div>
+
+          <section class="stat-total">
+            <div class="stat-total__top">
+              <span class="stat-total__label" id="statTotalLabel"></span>
+              <span class="trend-chip" id="trendChip">
+                <span class="ico ico--xs" data-ico="arrowUp" data-size="12"></span>
+                <span id="trendText"></span>
+              </span>
+            </div>
+            <div class="stat-total__amount"><span class="cur">¥</span><span id="statTotal">0.00</span></div>
+            <div class="stat-total__sub" id="statTotalSub"></div>
+          </section>
+
+          <section class="card card--pad16">
+            <div class="card__head">
+              <h2 class="card__title" id="trendTitle"></h2>
+              <span class="card__note" id="trendUnit"></span>
+            </div>
+            <div class="bar-chart" id="barChart"></div>
+          </section>
+
+          <section class="card card--pad16" id="catCard"></section>
+        </div>
+      </section>
+
+      <!-- ============ 05 · 预算 ============ -->
+      <section class="screen" id="s-budget">
+        <div class="content">
+          <header class="page-head">
+            <h1 class="page-head__title">预算</h1>
+            <button class="icon-btn" id="btnBudgetSet" aria-label="设置总预算">
+              <span class="ico" data-ico="sliders"></span>
+            </button>
+          </header>
+
+          <section class="hero" id="budgetHero" data-budgetset="1"></section>
+
+          <section class="card card--budget" id="cardBudget">
+            <div class="card__head card__head--pad">
+              <h2 class="card__title">分类预算</h2>
+              <button class="card__more" id="btnManageCatBudget">管理</button>
+            </div>
+            <div class="hairline hairline--full"></div>
+            <div id="catBudgets"></div>
+          </section>
+
+          <section class="tip-card">
+            <div class="tip-card__icon"><span class="ico" data-ico="bulb"></span></div>
+            <div class="tip-card__body">
+              <div class="tip-card__title">预算小提示</div>
+              <p class="tip-card__text" id="tipText"></p>
+            </div>
+          </section>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ============ 底部导航 ============ -->
+    <nav id="tabbar">
+      <div class="tabbar__pill" id="tabbarPill"></div>
+    </nav>
+  </div>
+
+  <!-- ============ 02 · 记一笔（壳层之外的整屏模态） ============ -->
+  <section id="s-add">
+    <div class="content">
+      <header class="add-head">
+        <button class="add-head__cancel" data-close="add">取消</button>
+        <h1 class="add-head__title" id="addTitle">记一笔</h1>
+        <button class="add-head__save" id="btnSave">保存</button>
+      </header>
+
+      <div class="segment" id="addSegment">
+        <span class="segment__thumb" id="addSegThumb"></span>
+        <button class="segment__item is-active" data-kind="expense"><span>支出</span></button>
+        <button class="segment__item" data-kind="income"><span>收入</span></button>
+      </div>
+
+      <div class="amount-block">
+        <div class="amount-block__row">
+          <div class="amount-block__chips">
+            <button class="cat-chip" id="addCatChip"></button>
+            <button class="cat-chip cat-chip--ghost" id="btnRepeat" style="display:none">复刻</button>
+          </div>
+          <div class="amount-block__value"><span class="cur">¥</span><span id="addAmount">0.00</span></div>
+        </div>
+        <div class="amount-block__sub" id="addSub"></div>
+      </div>
+
+      <div class="cat-grid" id="catGrid"></div>
+
+      <div class="keypad" id="keypad"></div>
+
+      <div class="meta-card">
+        <button class="meta-row" data-meta="date">
+          <span class="meta-row__label">日期</span>
+          <span class="meta-row__value" id="metaDate"></span>
+        </button>
+        <div class="hairline"></div>
+        <button class="meta-row" data-meta="account">
+          <span class="meta-row__label">账户</span>
+          <span class="meta-row__value" id="metaAccount"></span>
+        </button>
+        <div class="hairline"></div>
+        <button class="meta-row" data-meta="note">
+          <span class="meta-row__label">备注</span>
+          <span class="meta-row__value" id="metaNote"></span>
+        </button>
+      </div>
+
+      <button class="add-delete" id="btnDeleteTx" style="display:none">删除这笔记录</button>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast">
+  <span class="toast__msg" id="toastMsg"></span>
+  <button class="toast__btn" id="toastBtn" style="display:none"></button>
+</div>
+<div class="picker" id="picker"><div class="picker__panel" id="pickerPanel"></div></div>
+
+<script src="js/icons.js"></script>
+<script src="js/motion.js"></script>
+<script src="js/store.js"></script>
+<script src="js/views.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

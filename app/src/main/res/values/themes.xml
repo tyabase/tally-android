@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 无 ActionBar、浅色状态栏、启动窗口底色与设计稿页面底色一致，避免启动闪白 -->
+    <style name="Theme.Tally" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@color/bg_page</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:colorAccent">@color/brand</item>
+    </style>
+
+</resources>

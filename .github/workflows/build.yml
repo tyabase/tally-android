@@ -1,0 +1,59 @@
+name: Build
+
+# 只做一件事：证明这份代码在干净环境里能构建出 APK。
+# 产物是未签名包 —— 签名密钥不进仓库，这是有意的（见 README「目录结构」）。
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  assemble:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # AGP 8.1.4 需要 JDK 17；runner 上预装的是 17/21，显式选 17
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      # 工程锁定了 build-tools 34.0.0，而 gradle.properties 里关掉了 sdkDownload，
+      # 所以必须在构建前把它装好，否则构建会直接失败而不是自动下载。
+      - name: Install required SDK packages
+        run: sdkmanager --install "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', '**/*.gradle') }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: Build release
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
+
+      # 校验包内 web 层与源码一致。这一步会挡住「增量构建复用了旧产物」这类
+      # 「构建成功但内容是旧的」问题 —— 只跑 assembleRelease 是发现不了的。
+      - name: Verify packaged assets match source
+        run: node tools/verify-apk-assets.mjs
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: tally-release-unsigned
+          path: app/build/outputs/apk/release/*.apk
+          if-no-files-found: error

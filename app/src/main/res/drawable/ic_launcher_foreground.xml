@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  图标前景：tally marks（记数用的五笔划记法）。
+  与产品名 Tally 同源 —— 名字即符号，一笔一笔记下来。
+
+  这一版重做了比例：
+  · 笔画由 6.2 收到 5.8，四道竖笔的净空从 6.8 放大到 7.4，
+    小尺寸下不再糊成一块黑条
+  · 竖笔 13.2 等距、居中于 54；斜笔加陡到 37°，两端各出 2.5
+  · 最远点距圆心 32.3 < 33，任何圆形 / 方形 / 水滴形遮罩下都不会被切
+  · 颜色改为纯白 —— 底色已是墨黑，不再需要靠色相去抢注意力
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 四道竖笔 -->
+    <path
+        android:pathData="M33.8,32 L33.8,76"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="5.8"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M47,32 L47,76"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="5.8"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M60.2,32 L60.2,76"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="5.8"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M73.4,32 L73.4,76"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="5.8"
+        android:strokeLineCap="round" />
+
+    <!-- 斜贯笔：tally 记法的标志性那一划 -->
+    <path
+        android:pathData="M31.5,71 L76.5,37"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="5.8"
+        android:strokeLineCap="round" />
+</vector>

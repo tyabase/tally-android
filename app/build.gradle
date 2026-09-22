@@ -1,0 +1,89 @@
+plugins { id 'com.android.application' }
+
+/*
+ * 签名信息不写在构建脚本里，而是从仓库根目录的 keystore.properties 读取。
+ * 该文件连同 .jks 一起被 .gitignore 排除 —— 密钥一旦进了提交历史就再也抹不掉。
+ * 没有这个文件时构建依然可用，只是 release 产物为未签名包（无法直接安装）。
+ */
+def keystorePropsFile = rootProject.file('keystore.properties')
+def keystoreProps = new Properties()
+def hasKeystore = keystorePropsFile.exists()
+if (hasKeystore) {
+    keystorePropsFile.withInputStream { keystoreProps.load(it) }
+} else {
+    logger.lifecycle('''
+[提示] 未找到 keystore.properties，release 将产出未签名 APK。
+       需要可安装的包时：
+         1) cp keystore.properties.example keystore.properties
+         2) keytool -genkeypair -v -keystore keystore/tally.jks -alias tally \\
+              -keyalg RSA -keysize 2048 -validity 10000
+         3) 把口令填进 keystore.properties
+''')
+}
+
+android {
+    namespace 'com.workbuddy.tally'
+    compileSdk 34
+
+    // 必须显式指定：AGP 8.1.x 默认找 build-tools 33.0.1，
+    // 而 gradle.properties 里关掉了 sdkDownload，缺失时不会自动下载，直接构建失败。
+    buildToolsVersion "34.0.0"
+
+    defaultConfig {
+        applicationId "com.workbuddy.tally"
+        minSdk 26
+        targetSdk 34
+        versionCode 4
+        versionName "1.4"
+        resConfigs 'zh', 'en'
+    }
+
+    signingConfigs {
+        release {
+            if (hasKeystore) {
+                storeFile rootProject.file(keystoreProps['storeFile'])
+                storePassword keystoreProps['storePassword']
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            shrinkResources false
+            // 没有密钥时不挂 signingConfig，AGP 会产出 app-release-unsigned.apk
+            signingConfig hasKeystore ? signingConfigs.release : null
+        }
+        // debug 也走 release 密钥：本项目不需要 debug 签名，
+        // 统一成一套可以让「装过的 debug 包」被正式包直接覆盖升级。
+        debug { signingConfig hasKeystore ? signingConfigs.release : signingConfigs.debug }
+    }
+
+    // 跳过 lint：lintVitalReportRelease 会强制加载整套 SDK，拖慢并可能卡住 release 构建
+    lint { checkReleaseBuilds false; abortOnError false }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    packagingOptions { resources.excludes += ['META-INF/*'] }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.core:core:1.12.0'
+}
+
+// AndroidX 传递依赖里同时出现了 kotlin-stdlib 1.8.22 与 kotlin-stdlib-jdk7/jdk8 1.6.0：
+// 自 Kotlin 1.8 起 jdk7/jdk8 的类已并入 stdlib，两者共存会导致 checkDuplicateClasses 失败。
+// 统一 stdlib 版本，并排除已废弃的 jdk7/jdk8 拆分模块。
+configurations.all {
+    resolutionStrategy {
+        force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
+    }
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+    exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+}
